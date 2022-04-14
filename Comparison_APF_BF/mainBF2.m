@@ -24,7 +24,7 @@ obstacles(2).position = [2.5; 3];
 obstacles(2).radius = 0.5;
 
 %% LINEAR SYSTEM
-A = [zeros(2), eye(2); zeros(2); zeros(2)];
+A = [zeros(2), eye(2); zeros(2), zeros(2)];
 B = [zeros(2, 1); ones(2, 1)];
 
 %% CONTROL

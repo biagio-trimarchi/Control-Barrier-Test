@@ -97,6 +97,15 @@ figure(4)
 plot(t, h(D, tau_d, vf))
 legend('h(x)')
 
+figure(5)
+plot(t, vl, 'LineWidth', 2)
+hold on
+plot(t, vf, 'LineWidth', 2)
+plot(t, vd*ones(1, length(t)), 'LineWidth', 2)
+hold off
+legend('v_{leading}(t)', 'v_{follwer}(t)', 'v_{desired}')
+ylim([15, 23])
+
 pos = 0;
 % for tt = 1:length(t)-1
 %     plot(pos, 0, 'o', 'MarkerSize', 20)
