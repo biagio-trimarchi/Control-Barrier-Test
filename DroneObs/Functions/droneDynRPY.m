@@ -31,11 +31,11 @@ function ds = droneDynRPY(m, J, g, s, F, M)
     ds(6) = aux(3);
     
     %% Rotational Dynamics
-    % Rotation Matrix
+    % Angular Velocity
     R = [cos(theta) 0 -cos(phi)*sin(theta);
          0 1 sin(phi);
          sin(theta) 0 cos(phi)*cos(theta)];
-    aux = R*w;
+    aux = R\w;
     
     ds(7) = aux(1);
     ds(8) = aux(2);

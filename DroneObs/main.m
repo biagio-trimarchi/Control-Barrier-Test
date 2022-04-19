@@ -6,8 +6,9 @@ clc
 addpath('./Functions')
 
 %% PARAMETERS
-g = 9.81;
+gf = 9.81;
 m = 1;
+J = eye(3);
 d = 3;
 n = 2;
 d_safe = 1;
@@ -52,7 +53,7 @@ K = [10, 5, 5];
 dt = 0.0001;
 t = 0:dt:1;
 ss(:, 1) = [x_start; zeros(d, 1)];
-xx(:, 1) = zeros(12, 1);
+xx(:, 1) = [ss(:, 1); zeros(6, 1)];
 for tt = 1:length(t)
     u(1, 1) = -K(1)*(ss(1, tt) - x_goal(1)) - K(2)*ss(4, tt);
     u(2, 1) = -K(1)*(ss(2, tt) - x_goal(2)) - K(2)*ss(5, tt);
@@ -63,7 +64,11 @@ for tt = 1:length(t)
     tic
     u = quadprog(eye(d), -2*u, double(A1(temp{:})), double(b1(temp{:})), [], [], [], [], u, options);
     elapsed(tt) = toc;
-    ss(:, tt+1) = ss(:, tt) + (F*ss(:, tt) + G*u)*dt;
+    [F, M] = ctrlSmallAngles(xx(:, tt), 0, 0, 0, 0, m, gf, u);
+    dx = droneDynRPY(m, J, gf, xx(:, tt), F, M)';
+    xx(:, tt+1) = xx(:, tt) + dx*dt;
+    ss(:, tt+1) = xx(1:6, tt+1);
+    %ss(:, tt+1) = ss(:, tt) + (F*ss(:, tt) + G*u)*dt;
 end
 
 plot3(ss(1, :), ss(2, :), ss(3, :))
