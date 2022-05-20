@@ -1,5 +1,8 @@
 clear
 clc
+
+addpath('./Functions')
+
 dt = 0.0001;
 t = 0:dt:4*pi;
 xx(:, 1) = zeros(12, 1);
@@ -8,7 +11,7 @@ m = 1;
 J = eye(3);
 
 %% CIRCLE
-f = 4;
+f = 2;
 circle = [10*cos((t/f)); 10*sin((t/f)); 5*ones(1, length(t))];
 vel_circle = [-10/f*sin((t/f)); 10/f*cos((t/f)); zeros(1, length(t))];
 acc_circle = [-10/(f^2)*cos((t/f)); -10/(f^2)*sin((t/f)); zeros(1, length(t))];

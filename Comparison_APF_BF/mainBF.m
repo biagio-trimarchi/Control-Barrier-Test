@@ -31,7 +31,7 @@ for tt = 1:length(t)
     H = eye(2);
     F = -v_des';
     A = -[deltah(x(:,tt), obstacles(1))'; deltah(x(:, tt), obstacles(2))'];
-    b = alpha*[h(x(:, tt), obstacles(1))^2; h(x(:, tt), obstacles(2))];
+    b = alpha*[h(x(:, tt), obstacles(1)); h(x(:, tt), obstacles(2))];
     
     options = optimoptions('quadprog', 'Display', 'off');
     u = quadprog(H, F, A, b, [], [], [], [], [], options);

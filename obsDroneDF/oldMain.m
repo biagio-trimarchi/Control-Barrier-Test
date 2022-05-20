@@ -10,7 +10,7 @@ gf = 9.81;
 m = 1;
 J = eye(3);
 d = 3;
-n = 2;
+n = 4;
 d_safe = 1;
 x_start = [0; 0; 25];
 x_goal = [20; 20; 25];
@@ -24,14 +24,15 @@ obs(1).radius = 2;
 syms s [n*d 1]
 syms aux
 
-F = [zeros(d), eye(d); zeros(d), zeros(d)];
-G = [zeros(d); eye(d)];
+F = [zeros((n-1)*d), eye(d); zeros(1, n)];
+
+G = [zeros(n-1, 1); 1];
 
 f = F*s;
 g = G;
 
 h1(s) = (s(1:d) - obs(1).center)'*(s(1:d) - obs(1).center) - (d_safe + obs(1).radius)^2;
-alpha1(aux) = [aux; aux; aux];
+alpha1(aux) = [aux; aux; aux; aux; aux];
 
 psi1(1) = h1;
 for i = 2:n
@@ -46,7 +47,7 @@ for i = 1:n-1
 end
 
 lim = 5;
-A1 = matlabFunction(-lieDer(lieDerOrdr(h1, f, s, n-1), g, s), 'Vars', {[s1 s2 s3 s4 s5 s6]});
+A1 = matlabFunction(-lieDer(lieDerOrdr(h1, f, s, n-1), g, s), 'Vars', {[s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12]});
 A = [1 0 0;
     -1 0 0;
      0 1 0;
@@ -54,18 +55,18 @@ A = [1 0 0;
      0 0 1;
      0 0 -1];
 tmp = alpha1(psi1(n));
-b1 = matlabFunction(lieDerOrdr(h1, f, s, n)+bigO1+tmp(n+1), 'Vars', {[s1 s2 s3 s4 s5 s6]});
+b1 = matlabFunction(lieDerOrdr(h1, f, s, n)+bigO1+tmp(n+1), 'Vars', {[s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12]});
 b = [lim; lim; lim; lim; lim; lim];
 
-K = [15, 10, 10];
+K = [15, 10, 100, 100];
 dt = 0.0001;
 t = 0:dt:5;
-ss(:, 1) = [x_start; zeros(d, 1)];
+ss(:, 1) = [x_start; zeros((n-1)*d, 1)];
 xx(:, 1) = [ss(:, 1); zeros(6, 1)];
 for tt = 1:length(t)
-    u(1, 1) = -K(1)*(ss(1, tt) - x_goal(1)) - K(2)*ss(4, tt);
-    u(2, 1) = -K(1)*(ss(2, tt) - x_goal(2)) - K(2)*ss(5, tt);
-    u(3, 1) = -K(1)*(ss(3, tt) - x_goal(3)) - K(2)*ss(6, tt);
+    u(1, 1) = -K(1)*(ss(1, tt) - x_goal(1)) - K(2)*ss(4, tt) - K(3)*K(2)*ss(7, tt) - K(4)*ss(10, tt);
+    u(2, 1) = -K(1)*(ss(2, tt) - x_goal(2)) - K(2)*ss(5, tt) - K(3)*K(2)*ss(8, tt) - K(4)*ss(11, tt);
+    u(3, 1) = -K(1)*(ss(3, tt) - x_goal(3)) - K(2)*ss(6, tt) - K(3)*K(2)*ss(9, tt) - K(4)*ss(12, tt);
     psi_des = (x_goal - x_start)/norm(x_goal - x_start);
     psi_des = 0;
     
@@ -77,14 +78,14 @@ for tt = 1:length(t)
     
     options = optimoptions('quadprog', 'Display', 'off');
     tic
-%     u = quadprog(eye(d), -2*u, [A1(ss(:, tt)'); A], [b1(ss(:, tt)'); b], [], [], [], [], u, options);
-    elapsed(tt) = toc;
-    el(tt, :) = u;
-    [F, M] = ctrlSmallAngles(xx(:, tt), 0, 0, 0, 0, m, gf, u);
-    dx = droneDynRPY(m, J, gf, xx(:, tt), F, M)';
-    xx(:, tt+1) = xx(:, tt) + dx*dt;
-    ss(:, tt+1) = xx(1:6, tt+1);
-    %ss(:, tt+1) = ss(:, tt) + (F*ss(:, tt) + G*u)*dt;
+    u = quadprog(eye(d), -2*u, A1(ss(:, tt)'), b1(ss(:, tt)'), [], [], [], [], u, options);
+%     elapsed(tt) = toc;
+%     el(tt, :) = u;
+%     [F, M] = ctrlSmallAngles(xx(:, tt), 0, 0, 0, 0, m, gf, u);
+%     dx = droneDynRPY(m, J, gf, xx(:, tt), F, M)';
+%     xx(:, tt+1) = xx(:, tt) + dx*dt;
+%    ss(:, tt+1) = xx(1:6, tt+1);
+    ss(:, tt+1) = ss(:, tt) + (F*ss(:, tt) + G*u)*dt;
 end
 
 %% PLOTS
